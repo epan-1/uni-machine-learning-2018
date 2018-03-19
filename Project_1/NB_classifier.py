@@ -19,9 +19,10 @@ class DataSet:
         for line in file.readlines():
             # Split based on common to get the values
             row = line.split(',')
-            self.num_rows = len(row)
-            # Add row to table
+            self.num_cols = len(row)
+            # Add row to table and increment row count
             self.table.append(row)
+            self.num_rows = self.num_rows + 1
         file.close()
 
     def get_num_rows(self):
