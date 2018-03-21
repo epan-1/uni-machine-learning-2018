@@ -185,8 +185,11 @@ def log_eval_supervised(data_instance, model):
         nb_scores[class_name] = mth.log(prior[class_name])
         attr_index = 0
         for attribute in data_instance:
-            nb_scores[class_name] += mth.log(posterior[attr_index][attribute][class_name])
-            attr_index += 1
+            if attribute == '?':
+                attr_index += 1
+            else:
+                nb_scores[class_name] += mth.log(posterior[attr_index][attribute][class_name])
+                attr_index += 1
     return nb_scores
 
 
@@ -199,5 +202,6 @@ prior = a.get_prior_prob()
 posterior = a.get_posterior_prob()
 test_instance = ['?', 'hot', '?', 'false']
 # test_instance = ['mild', 'severe', 'normal', 'no']
+# ans = log_eval_supervised(test_instance, a)
 ans = evaluate_supervised(test_instance, a)
 
