@@ -1,0 +1,6 @@
+sunny,hot,normal,false,no
+sunny,hot,humid,true,no
+overcast,hot,humid,false,yes
+rainy,mild,humid,false,yes
+rainy,cool,normal,false,yes
+rainy,cool,normal,true,no

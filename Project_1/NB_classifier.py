@@ -3,6 +3,7 @@
 # Naive Bayes classifier
 
 import numpy as np
+import math as mth
 from collections import defaultdict
 
 
@@ -61,7 +62,7 @@ class SupervisedModel:
                         probabilities from
         """
         # Variables to store counts to use in calculating prior and posterior probabilities
-        self.prior_counts, self.posterior_counts = self.create_counts(dataset)
+        self.prior_counts, self.posterior_counts, self.missing_counts = self.create_counts(dataset)
 
         self.prior_prob, self.posterior_prob = self.__calc_probabilities__(dataset)
 
@@ -71,6 +72,12 @@ class SupervisedModel:
     def get_posterior_counts(self):
         return self.posterior_counts
 
+    def get_prior_prob(self):
+        return self.prior_prob
+
+    def get_posterior_prob(self):
+        return self.posterior_prob
+
     @classmethod
     def create_counts(cls, dataset):
 
@@ -78,26 +85,40 @@ class SupervisedModel:
         # Triple nested dictionary. Key of first dict contains attribute names, second dict
         # contains attribute values as keys, third dict contains class names as keys
         posterior_counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        # Structure to store how many missing values exist for each attribute. A key refers
+        # to the attribute name, second key refers to class name
+        missing_counts = defaultdict(lambda: defaultdict(int))
 
-        # Add class counts to default dict
+        # Add prior counts to default dict
         for row in dataset.table:
-            row_index = 0
             # Assuming last column is the class
             prior_counts[row[-1]] += 1
+        # Add posterior counts to data structure
+        for row in dataset.table:
+            row_index = 0
             for attribute in row[:-1]:
-                # Initialise all the dictionaries of each possible attribute value
-                # to contain all possible classes. Note missing values will not contribute
-                # to the counts and are treated as a separate count that will not be used
-                for key, value in prior_counts.items():
-                    posterior_counts[row_index][attribute][key]
+                # If attribute == ?, then add to missing counts dict
+                if attribute == '?':
+                    missing_counts[row_index][row[-1]] += 1
+                else:
+                    # Initialise all the dictionaries of each possible attribute value
+                    # to contain all possible classes. Note missing values will not contribute
+                    # to the counts and are treated as a separate count that will not be used
+                    for key, value in prior_counts.items():
+                        posterior_counts[row_index][attribute][key]
                 row_index += 1
             # Now add the counts
             row_index = 0
             for attribute in row[:-1]:
-                posterior_counts[row_index][attribute][row[-1]] += 1
-                row_index += 1
+                # Skip adding missing values
+                if attribute == '?':
+                    row_index += 1
+                else:
+                    # Add to the counts
+                    posterior_counts[row_index][attribute][row[-1]] += 1
+                    row_index += 1
 
-        return prior_counts, posterior_counts
+        return prior_counts, posterior_counts, missing_counts
 
     def __calc_probabilities__(self, dataset):
         prior_prob = defaultdict(float)
@@ -115,18 +136,68 @@ class SupervisedModel:
         for attr_name, val_dict in self.posterior_counts.items():
             # Value to add to denominator when doing Laplace smoothing.
             unique_attr_num = len(self.posterior_counts[attr_name].items())
+            # unique_attr_num = 0
             for attr_val, class_dict in self.posterior_counts[attr_name].items():
                 for class_name, count in self.posterior_counts[attr_name][attr_val].items():
                     # Do Laplace smoothing of the counts
-                    posterior_prob[attr_name][attr_val][class_name] = \
-                        (count + k)/(self.prior_counts[class_name] + unique_attr_num)
+                    numerator = count + k
+                    denominator = self.prior_counts[class_name] + unique_attr_num - \
+                                  self.missing_counts[attr_name][class_name]
+                    posterior_prob[attr_name][attr_val][class_name] = numerator/denominator
 
         return prior_prob, posterior_prob
 
 
+def evaluate_supervised(data_instance, model):
+    """
+    This function takes a single instance and returns a classification
+    :param data_instance: A list of attribute values
+    :param model: A SupervisedModel object to use for evaluation
+    :return: A string corresponding to the most likely class this instance belongs to
+    """
+    nb_scores = defaultdict(float)
+    for class_name, value in model.get_prior_counts().items():
+        prior = model.get_prior_prob()
+        posterior = model.get_posterior_prob()
+        nb_scores[class_name] = prior[class_name]
+        attr_index = 0
+        for attribute in data_instance:
+            # If test instance has missing value, skip it
+            if attribute == '?':
+                attr_index += 1
+            else:
+                nb_scores[class_name] *= posterior[attr_index][attribute][class_name]
+                attr_index += 1
+    return nb_scores
+
+
+def log_eval_supervised(data_instance, model):
+    """
+    This function takes a single instance and returns a classification
+    :param data_instance: A list of attribute values
+    :param model: A SupervisedModel object to use for evaluation
+    :return: A string corresponding to the most likely class this instance belongs to
+    """
+    nb_scores = defaultdict(float)
+    for class_name, value in model.get_prior_counts().items():
+        prior = model.get_prior_prob()
+        posterior = model.get_posterior_prob()
+        nb_scores[class_name] = mth.log(prior[class_name])
+        attr_index = 0
+        for attribute in data_instance:
+            nb_scores[class_name] += mth.log(posterior[attr_index][attribute][class_name])
+            attr_index += 1
+    return nb_scores
+
+
 # breast = DataSet('breast-cancer.csv')
-breast = DataSet('flu-test.csv')
-a = SupervisedModel(breast)
+data = DataSet('outlook-test.csv')
+a = SupervisedModel(data)
 b = a.get_prior_counts()
 c = a.get_posterior_counts()
+prior = a.get_prior_prob()
+posterior = a.get_posterior_prob()
+test_instance = ['?', 'hot', '?', 'false']
+# test_instance = ['mild', 'severe', 'normal', 'no']
+ans = evaluate_supervised(test_instance, a)
 
