@@ -148,7 +148,16 @@ class SupervisedModel:
         return prior_prob, posterior_prob
 
 
-def evaluate_supervised(data_instance, model):
+def arg_max(dictionary):
+    """
+    Function that returns the key that has the highest value in a dictionary
+    :param dictionary: Dictionary containing the values to check
+    :return: A string containing the name of key with the highest value
+    """
+    return max(dictionary, key=lambda key: dictionary[key])
+
+
+def predict_supervised(data_instance, model):
     """
     This function takes a single instance and returns a classification
     :param data_instance: A list of attribute values
@@ -168,10 +177,10 @@ def evaluate_supervised(data_instance, model):
             else:
                 nb_scores[class_name] *= posterior[attr_index][attribute][class_name]
                 attr_index += 1
-    return nb_scores
+    return arg_max(nb_scores)
 
 
-def log_eval_supervised(data_instance, model):
+def log_pred_supervised(data_instance, model):
     """
     This function takes a single instance and returns a classification
     :param data_instance: A list of attribute values
@@ -190,7 +199,34 @@ def log_eval_supervised(data_instance, model):
             else:
                 nb_scores[class_name] += mth.log(posterior[attr_index][attribute][class_name])
                 attr_index += 1
-    return nb_scores
+    return arg_max(nb_scores)
+
+
+def evaluate_supervised(filename):
+    """
+    Function that returns the accuracy rating for a given dataset when using Naive Bayes
+    to classify it's instances. NOTE: It uses all instances in the dataset to train and
+    will also be testing on the same instances
+    :param filename: filename of the dataset to test on
+    :return: An accuracy rating as a percentage for the number of instances correctly
+             classified
+    """
+    # Read and build the model from the dataset
+    data = DataSet(filename)
+    model = SupervisedModel(data)
+    # Now for each instance classify it and check if its correct
+    num_correct = 0
+    total_instances = data.get_num_rows()
+    for row in data.table:
+        # Check both the normal and log evaluation methods.
+        # Also skip last attribute as that is the true class for that instance
+        classified = predict_supervised(row[:-1], model)
+        classified_log = log_pred_supervised(row[:-1], model)
+        if classified == classified_log:
+            # Correct class is located at the end of the instance
+            if classified == row[-1]:
+                num_correct += 1
+    return (num_correct/total_instances) * 100
 
 
 # breast = DataSet('breast-cancer.csv')
@@ -200,8 +236,8 @@ b = a.get_prior_counts()
 c = a.get_posterior_counts()
 prior = a.get_prior_prob()
 posterior = a.get_posterior_prob()
-test_instance = ['?', 'hot', '?', 'false']
+test_instance = ['overcast', 'hot', 'humid', 'false']
 # test_instance = ['mild', 'severe', 'normal', 'no']
-# ans = log_eval_supervised(test_instance, a)
-ans = evaluate_supervised(test_instance, a)
-
+ans = log_pred_supervised(test_instance, a)
+# ans = predict_supervised(test_instance, a)
+a = evaluate_supervised('car.csv')
