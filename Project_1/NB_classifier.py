@@ -1,6 +1,5 @@
 # Code written by Edmond Pan (Student_Num = 841389)
-# Python script that implements both a supervised and unsupervised of the
-# Naive Bayes classifier
+# Python script that implements the Naive Bayes classifier
 
 import numpy as np
 import math as mth
@@ -18,7 +17,7 @@ class DataSet:
         self.num_rows = 0
         self.num_cols = 0
         self.table = []
-        file = open('Project_1/2018S1-proj1_data/' + filename, 'r')
+        file = open('2018S1-proj1_data/' + filename, 'r')
         for line in file.readlines():
             # Split based on common to get the values
             row = line.split(',')
@@ -42,22 +41,46 @@ class DataSet:
         """
         return self.num_cols
 
-    def __str__(self):
+    def get_table(self):
         """
-        Format: Returns a line by line output of what is stored in the table
-        :return: String containing the above format
+        Gets the stored table
+        :return: Returns a list of rows
         """
-        result = ''
+        return self.table
+
+    def random_initial(self):
+        """
+        Function that replaces the class labels with random (non-uniform)
+        class distributions. NOTE ONLY USE WHEN DOING UNSUPERVISED NB
+        :return: None
+        """
+        # Default dict containing all possible classes
+        classes = defaultdict(int)
         for row in self.table:
-            result += ' '.join(row)
-        return result
+            # Keep them all at 0 since they will b replaced with
+            # random fractional counts that sum to 1
+            classes[row[-1]] = 0
+
+        # Now remove the class labels and add the classes dictionaries while
+        # initialising the values to random fractional counts
+        for row in self.table:
+            # Add the random values to the dictionary
+            values = np.random.dirichlet(np.ones(len(classes)), size=1)
+            i = 0
+            for key, value in classes.items():
+                classes[key] = values[0][i]
+                i += 1
+            # Replace the old class label with the random class distribution.
+            # Make sure to return a copy of classes instead of passing the reference
+            row[-1] = classes.copy()
+        return
 
 
 class SupervisedModel:
 
     def __init__(self, dataset):
         """
-
+        Constructor for a SupervisedModel object
         :param dataset: A DataSet object containing the .csv file to calculate
                         probabilities from
         """
@@ -80,7 +103,13 @@ class SupervisedModel:
 
     @classmethod
     def create_counts(cls, dataset):
-
+        """
+        Function to count up the frequencies of the different classes and attributes
+        in the dataset
+        :param dataset: A DataSet object to read and produce counts from
+        :return: 2 dictionaries in tuple form. i.e. (dict1, dict2) that represent the
+                 counts to be used for prior and posterior probabilities respectively
+        """
         prior_counts = defaultdict(int)
         # Triple nested dictionary. Key of first dict contains attribute names, second dict
         # contains attribute values as keys, third dict contains class names as keys
@@ -121,6 +150,12 @@ class SupervisedModel:
         return prior_counts, posterior_counts, missing_counts
 
     def __calc_probabilities__(self, dataset):
+        """
+        Function that takes the counts and produces prior and posterior probabilities
+        :param dataset: A DataSet object to create the probabilities from
+        :return: 2 dictionaries in tuple form. i.e. (dict1, dict2) that represent prior
+                 and posterior probabilities respectively
+        """
         prior_prob = defaultdict(float)
         # Format for this dict is: First dict key refers to attribute name, second dict key refers
         # attribute value and third dict key refers to class name. E.g. P[0]['20-29']['recurrence-events\n']
