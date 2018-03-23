@@ -55,7 +55,7 @@ class DataSet:
         :return: None
         """
         # Default dict containing all possible classes
-        classes = defaultdict(int)
+        classes = defaultdict(float)
         for row in self.table:
             # Keep them all at 0 since they will b replaced with
             # random fractional counts that sum to 1
@@ -165,13 +165,12 @@ class SupervisedModel:
 
         # Calculating the prior probabilities
         for key, value in self.prior_counts.items():
-            prior_prob[key] = value/dataset.num_rows
+            prior_prob[key] = value/dataset.get_num_rows()
 
         # Calculating the posterior probabilities
         for attr_name, val_dict in self.posterior_counts.items():
             # Value to add to denominator when doing Laplace smoothing.
             unique_attr_num = len(self.posterior_counts[attr_name].items())
-            # unique_attr_num = 0
             for attr_val, class_dict in self.posterior_counts[attr_name].items():
                 for class_name, count in self.posterior_counts[attr_name][attr_val].items():
                     # Do Laplace smoothing of the counts
