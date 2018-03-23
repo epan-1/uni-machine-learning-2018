@@ -2,31 +2,48 @@
 # Python script that implements an unsupervised version
 # of the Naive Bayes classifier
 
-import math as mth
-from collections import defaultdict
-
 # Get the DataSet class from the other Python file
-from NB_classifier import DataSet
+from NB_classifier import DataSet, print_confusion
 
 
 class UnsupervisedModel:
 
-    def __init__(self, dataset, num_iter = 3):
+    def __init__(self, dataset):
         """
         Constructor for an UnsupervisedModel
         :param dataset: A DataSet object containing the dataset to classify
-        :param num_iter: An integer representing the number of iterations to
-                         use when attempting to get more accurate probabilities
-                         DEFAULTS to 3 iterations
         """
         # Variables to store prior counts and posterior counts
         self.prior_counts, self.posterior_counts, self.missing_counts = self.create_counts(dataset)
         # Variables to store prior and posterior probabilities
         self.prior_prob, self.posterior_prob = self.__calc_probabilities__(dataset)
-        # Variable to set how many iterations will be done to train the
-        # unsupervised model
-        self.num_iter = num_iter
 
+    def iterate(self, dataset, n=3):
+        """
+        Function that iteratively assigns new class distributions to dataset calculated
+        from the current model
+        :param dataset: A DataSet object to iteratively assign new class distributions
+        :param n: The number of iterations to perform. Defaults to 3
+        :return: None
+        """
+        for i in range(n):
+            self.recalculate(dataset)
+        return
+
+    @classmethod
+    def recalculate(cls, dataset):
+        """
+        Function that will recalculate all of the class distributions in
+        dataset and assign more reliable distributions
+        :param dataset: A DataSet object to be altered
+        :return: None
+        """
+        # Contains the current model of the dataset
+        old_model = UnsupervisedModel(dataset)
+        # Go through every instance of the dataset and reassign the class distributions
+        for row in dataset.table:
+            row[-1] = predict_uns_single(row[:-1], old_model)
+        return
 
     @classmethod
     def create_counts(cls, dataset):
@@ -101,13 +118,15 @@ class UnsupervisedModel:
             for attr_val, class_dict in self.posterior_counts[attr_name].items():
                 for class_name, count in self.posterior_counts[attr_name][attr_val].items():
                     numerator = count
-                    denominator = self.prior_counts[class_name]
+                    # Subtract the fractional counts from the total if this attribute of
+                    # the instance is missing
+                    denominator = self.prior_counts[class_name] - self.missing_counts[attr_name][class_name]
                     posterior_prob[attr_name][attr_val][class_name] = numerator/denominator
 
         return prior_prob, posterior_prob
 
 
-def predict_unsupervised(data_instance, model):
+def predict_uns_single(data_instance, model):
     """
     This function uses a trained unsupervised model to predict the class distribution
     for test instance
@@ -137,14 +156,76 @@ def predict_unsupervised(data_instance, model):
 
     return class_dist
 
+
+def arg_max(dictionary):
+    """
+    Function that returns the key that has the highest value in a dictionary
+    :param dictionary: Dictionary containing the values to check
+    :return: A string containing the name of key with the highest value
+    """
+    return max(dictionary, key=lambda key: dictionary[key])
+
+
+def predict_unsupervised(filename, n=3):
+    """
+    Function that predicts the class for a set of instances
+    :param filename: The filename of the .csv file that contains the set of instances
+                     to make predictions from
+    :param n: The number of iterations to perform. Defaults to 3
+    :return: A list of predicted classes with indices corresponding to the row number
+    """
+    predicted = []
+    # Read and build the model from the dataset.
+    data = DataSet(filename)
+    data.random_initial()
+    model = UnsupervisedModel(data)
+    # Iterate over the specified amount of times
+    model.iterate(data, n)
+    model = UnsupervisedModel(data)
+    for row in data.table:
+        # Also skip last attribute as that is the class distribution
+        predicted.append(arg_max(predict_uns_single(row[:-1], model)))
+    return predicted
+
+
+def evaluate_unsupervised(filename, n=3):
+    """
+    Function that returns the accuracy rating for a given dataset when using Naive Bayes
+    to classify it's instances. NOTE: It uses all instances in the dataset to train and
+    will also be testing on the same instances. Also prints out a confusion matrix and 
+    the accuracy
+    :param filename: filename of the dataset to test on
+    :param n: number of times to iterate when building the model. Default is 3
+    :return: None
+    """
+    predicted = predict_unsupervised(filename, n)
+    expected = []
+    data = DataSet(filename)
+    for row in data.table:
+        expected.append(row[-1])
+    matrix = print_confusion(predicted, expected)
+    print(predicted)
+    print(expected)
+    accuracy = 0
+    total_instances = data.get_num_rows()
+    for key, value in matrix.items():
+        accuracy += max(matrix[key].values())
+    print('Accuracy = ' + str((accuracy/total_instances) * 100))
+    return matrix
+
+
 from test_cases import *
 
 a = DataSet('flu-test.csv')
-temp_test(a.table)
-# a.random_initial()
-b = UnsupervisedModel(a)
-c = b.prior_counts
-d = b.posterior_counts
-e = b.prior_prob
-f = b.posterior_prob
-ans = predict_unsupervised(['severe', 'mild', 'high', 'yes'], b)
+# evaluate_unsupervised('flu-test.csv')
+# temp_test(a.table)
+a.random_initial()
+# b = UnsupervisedModel(a)
+# b.iterate(a, 2)
+# b = UnsupervisedModel(a)
+# c = b.prior_counts
+# d = b.posterior_counts
+# e = b.prior_prob
+# f = b.posterior_prob
+# ans = predict_unsupervised(['severe', 'mild', 'high', 'yes'], b)
+ans = evaluate_unsupervised('flu-test.csv')

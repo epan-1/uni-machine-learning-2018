@@ -191,7 +191,7 @@ def arg_max(dictionary):
     return max(dictionary, key=lambda key: dictionary[key])
 
 
-def predict_supervised(data_instance, model):
+def predict_sup_single(data_instance, model):
     """
     This function takes a single instance and returns a classification
     :param data_instance: A list of attribute values
@@ -214,7 +214,7 @@ def predict_supervised(data_instance, model):
     return arg_max(nb_scores)
 
 
-def log_pred_supervised(data_instance, model):
+def log_pred_sup_single(data_instance, model):
     """
     This function takes a single instance and returns a classification
     :param data_instance: A list of attribute values
@@ -236,42 +236,76 @@ def log_pred_supervised(data_instance, model):
     return arg_max(nb_scores)
 
 
+def predict_supervised(filename):
+    """
+    Function that predicts the class for a set of instances
+    :param filename: The filename of the .csv file to create predictions from
+    :return: A list of predicted classes with indices corresponding to the row number
+    """
+    predicted = []
+    # Build the model from the dataset.
+    data = DataSet(filename)
+    model = SupervisedModel(data)
+    for row in data.table:
+        # Also skip last attribute as that is the class distribution
+        classified = predict_sup_single(row[:-1], model)
+        if classified == log_pred_sup_single(row[:-1], model):
+            predicted.append(classified)
+    return predicted
+
+
+def print_confusion(predicted, expected):
+    """
+    Function to print the confusion matrix from a list of predicted and
+    expected values
+    :param predicted: A list of predicted values 
+    :param expected:  A list of expected values
+    :return: None
+    """
+    if len(predicted) != len(expected):
+        print("FATAL ERROR: List lengths do not match")
+        return
+    # Structure to store the matrix data. Can access the individual values
+    # in this format matrix[predicted_class][expected_class]
+    matrix = defaultdict(lambda: defaultdict(int))
+    for i in range(len(predicted)):
+        matrix[predicted[i]][expected[i]] += 1
+    return matrix
+
+
 def evaluate_supervised(filename):
     """
-    Function that returns the accuracy rating for a given dataset when using Naive Bayes
-    to classify it's instances. NOTE: It uses all instances in the dataset to train and
-    will also be testing on the same instances
-    :param filename: filename of the dataset to test on
+    Function that returns the accuracy rating for a given set of predictions
+    :param filename: The name of the .csv files the predictions were created from
     :return: An accuracy rating as a percentage for the number of instances correctly
              classified
     """
-    # Read and build the model from the dataset
-    data = DataSet(filename)
-    model = SupervisedModel(data)
-    # Now for each instance classify it and check if its correct
+    # Get the expected classes from the dataset
+    dataset = DataSet(filename)
+    expected = []
+    for row in dataset.table:
+        expected.append(row[-1])
+    predicted = predict_supervised(filename)
+    # Now for each instance check if it matches the expected
     num_correct = 0
-    total_instances = data.get_num_rows()
-    for row in data.table:
-        # Check both the normal and log evaluation methods.
-        # Also skip last attribute as that is the true class for that instance
-        classified = predict_supervised(row[:-1], model)
-        classified_log = log_pred_supervised(row[:-1], model)
-        if classified == classified_log:
-            # Correct class is located at the end of the instance
-            if classified == row[-1]:
-                num_correct += 1
-    return (num_correct/total_instances) * 100
+    total_instances = len(expected)
+    curr_inst = 0
+    for pred in predicted:
+        if pred == expected[curr_inst]:
+            num_correct += 1
+        curr_inst += 1
+    print('Accuracy = ' + str((num_correct/total_instances) * 100))
+    return print_confusion(predicted, expected)
 
 
 # breast = DataSet('breast-cancer.csv')
-data = DataSet('outlook-test.csv')
-a = SupervisedModel(data)
-b = a.get_prior_counts()
-c = a.get_posterior_counts()
-prior = a.get_prior_prob()
-posterior = a.get_posterior_prob()
-test_instance = ['overcast', 'hot', 'humid', 'false']
+# data = DataSet('flu-test.csv')
+# a = SupervisedModel(data)
+# b = a.get_prior_counts()
+# c = a.get_posterior_counts()
+# prior = a.get_prior_prob()
+# posterior = a.get_posterior_prob()
+# test_instance = ['overcast', 'hot', 'humid', 'false']
 # test_instance = ['mild', 'severe', 'normal', 'no']
-ans = log_pred_supervised(test_instance, a)
-# ans = predict_supervised(test_instance, a)
-a = evaluate_supervised('car.csv')
+# ans = log_pred_sup_single(test_instance, a)
+# ans = evaluate_supervised('mushroom.csv')
