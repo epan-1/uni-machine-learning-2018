@@ -3,7 +3,7 @@
 # of the Naive Bayes classifier
 
 # Get the DataSet class from the other Python file
-from NB_classifier import DataSet, print_confusion
+from NB_classifier import DataSet, print_confusion, arg_max
 
 
 class UnsupervisedModel:
@@ -157,15 +157,6 @@ def predict_uns_single(data_instance, model):
     return class_dist
 
 
-def arg_max(dictionary):
-    """
-    Function that returns the key that has the highest value in a dictionary
-    :param dictionary: Dictionary containing the values to check
-    :return: A string containing the name of key with the highest value
-    """
-    return max(dictionary, key=lambda key: dictionary[key])
-
-
 def predict_unsupervised(filename, n=3):
     """
     Function that predicts the class for a set of instances
@@ -192,11 +183,11 @@ def evaluate_unsupervised(filename, n=3):
     """
     Function that returns the accuracy rating for a given dataset when using Naive Bayes
     to classify it's instances. NOTE: It uses all instances in the dataset to train and
-    will also be testing on the same instances. Also prints out a confusion matrix and 
-    the accuracy
+    will also be testing on the same instances.
     :param filename: filename of the dataset to test on
     :param n: number of times to iterate when building the model. Default is 3
-    :return: None
+    :return: A confusion matrix in the format of a 2D dictionary accessible in the
+             format matrix[predicted_class][expected_class]
     """
     predicted = predict_unsupervised(filename, n)
     expected = []
@@ -204,8 +195,6 @@ def evaluate_unsupervised(filename, n=3):
     for row in data.table:
         expected.append(row[-1])
     matrix = print_confusion(predicted, expected)
-    print(predicted)
-    print(expected)
     accuracy = 0
     total_instances = data.get_num_rows()
     for key, value in matrix.items():
@@ -216,10 +205,10 @@ def evaluate_unsupervised(filename, n=3):
 
 from test_cases import *
 
-a = DataSet('flu-test.csv')
+# a = DataSet('flu-test.csv')
 # evaluate_unsupervised('flu-test.csv')
 # temp_test(a.table)
-a.random_initial()
+# a.random_initial()
 # b = UnsupervisedModel(a)
 # b.iterate(a, 2)
 # b = UnsupervisedModel(a)

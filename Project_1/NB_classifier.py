@@ -275,10 +275,11 @@ def print_confusion(predicted, expected):
 
 def evaluate_supervised(filename):
     """
-    Function that returns the accuracy rating for a given set of predictions
+    Function that prints the accuracy rating for a given set of predictions and
+    constructs a confusion matrix
     :param filename: The name of the .csv files the predictions were created from
-    :return: An accuracy rating as a percentage for the number of instances correctly
-             classified
+    :return: A confusion matrix in the format of a 2D dictionary accessible in the
+             format matrix[predicted_class][expected_class]
     """
     # Get the expected classes from the dataset
     dataset = DataSet(filename)
