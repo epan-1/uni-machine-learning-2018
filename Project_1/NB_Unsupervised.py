@@ -199,6 +199,9 @@ def evaluate_unsupervised(filename, n=3):
     matrix = print_confusion(predicted, expected)
     accuracy = 0
     total_instances = data.get_num_rows()
+    # Here accuracy is calculated by using the highest estimate of accuracy
+    # which is simply the sum of the highest value in each column of the matrix
+    # We assume this highest estimate is the fairest for the Unsupervised NB
     for key, value in matrix.items():
         accuracy += max(matrix[key].values())
     print('Accuracy = ' + str((accuracy/total_instances) * 100))

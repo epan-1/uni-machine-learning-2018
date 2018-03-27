@@ -48,21 +48,21 @@ def help_print(matrix):
     stat = 0
     head_padding = 12
     padding = 8
-    for predicted in matrix.keys():
+    for expected in matrix.keys():
         if stat == 0:
-            header += (head_padding - len(predicted)) * ' ' + \
-                       predicted.strip('\n') + ' |'
+            header += (head_padding - len(expected)) * ' ' + \
+                       expected.strip('\n') + ' |'
         else:
-            header += ' ' + predicted.strip('\n') + ' |'
+            header += ' ' + expected.strip('\n') + ' |'
         line = ''
         stat = 0
-        for expected in matrix.keys():
+        for predicted in matrix.keys():
             if stat == 0:
-                line += (padding - len(predicted)) * ' ' + \
-                         predicted.strip('\n') + ' | '
+                line += (padding - len(expected)) * ' ' + \
+                         expected.strip('\n') + ' | '
                 line += str(matrix[predicted][expected]) + ' | '
             else:
-                line += str(matrix[predicted][expected])
+                line += str(matrix[predicted][expected]) + ' | '
             stat = 1
         line += '\n'
         line_list.append(line)

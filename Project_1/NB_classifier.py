@@ -193,8 +193,10 @@ def evaluate_supervised(filename):
     matrix = print_confusion(predicted, expected)
     accuracy = 0
     total_instances = dataset.get_num_rows()
-    for key, value in matrix.items():
-        accuracy += max(matrix[key].values())
+    for expected in matrix.keys():
+        for predicted in matrix[expected].keys():
+            if expected == predicted:
+                accuracy += matrix[expected][predicted]
     print('Accuracy = ' + str((accuracy/total_instances) * 100))
     return matrix
 
