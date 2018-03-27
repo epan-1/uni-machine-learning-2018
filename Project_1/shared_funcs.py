@@ -4,6 +4,8 @@
 # Written by Edmond Pan (841389)
 ###
 
+from collections import defaultdict
+
 
 def arg_max(dictionary):
     """
@@ -30,4 +32,44 @@ def print_confusion(predicted, expected):
     matrix = defaultdict(lambda: defaultdict(int))
     for i in range(len(predicted)):
         matrix[predicted[i]][expected[i]] += 1
+    help_print(matrix)
     return matrix
+
+
+def help_print(matrix):
+    """
+    Function that aids in printing the confusion matrix
+    :param matrix: A confusion matrix to print. Essentially a double nested
+                   dictionary
+    :return: None
+    """
+    header = ''
+    line_list = []
+    stat = 0
+    head_padding = 12
+    padding = 8
+    for predicted in matrix.keys():
+        if stat == 0:
+            header += (head_padding - len(predicted)) * ' ' + \
+                       predicted.strip('\n') + ' |'
+        else:
+            header += ' ' + predicted.strip('\n') + ' |'
+        line = ''
+        stat = 0
+        for expected in matrix.keys():
+            if stat == 0:
+                line += (padding - len(predicted)) * ' ' + \
+                         predicted.strip('\n') + ' | '
+                line += str(matrix[predicted][expected]) + ' | '
+            else:
+                line += str(matrix[predicted][expected])
+            stat = 1
+        line += '\n'
+        line_list.append(line)
+    header += '\n'
+
+    print(header)
+    for x in line_list:
+        print(x)
+
+    return

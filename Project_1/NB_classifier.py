@@ -201,15 +201,3 @@ def evaluate_supervised(filename):
     print('Accuracy = ' + str((num_correct/total_instances) * 100))
     return print_confusion(predicted, expected)
 
-
-# breast = DataSet('breast-cancer.csv')
-# data = DataSet('flu-test.csv')
-# a = SupervisedModel(data)
-# b = a.get_prior_counts()
-# c = a.get_posterior_counts()
-# prior = a.get_prior_prob()
-# posterior = a.get_posterior_prob()
-# test_instance = ['overcast', 'hot', 'humid', 'false']
-# test_instance = ['mild', 'severe', 'normal', 'no']
-# ans = log_pred_sup_single(test_instance, a)
-# ans = evaluate_supervised('mushroom.csv')

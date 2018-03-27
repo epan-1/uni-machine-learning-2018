@@ -5,6 +5,7 @@
 # Get the DataSet class from the other Python file
 from dataset import DataSet
 from shared_funcs import *
+from collections import defaultdict
 
 
 class UnsupervisedModel:
