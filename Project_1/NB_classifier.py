@@ -190,14 +190,11 @@ def evaluate_supervised(filename):
     for row in dataset.table:
         expected.append(row[-1])
     predicted = predict_supervised(filename)
-    # Now for each instance check if it matches the expected
-    num_correct = 0
-    total_instances = len(expected)
-    curr_inst = 0
-    for pred in predicted:
-        if pred == expected[curr_inst]:
-            num_correct += 1
-        curr_inst += 1
-    print('Accuracy = ' + str((num_correct/total_instances) * 100))
-    return print_confusion(predicted, expected)
+    matrix = print_confusion(predicted, expected)
+    accuracy = 0
+    total_instances = dataset.get_num_rows()
+    for key, value in matrix.items():
+        accuracy += max(matrix[key].values())
+    print('Accuracy = ' + str((accuracy/total_instances) * 100))
+    return matrix
 

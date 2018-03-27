@@ -19,7 +19,6 @@ from NB_Unsupervised import *
 # test_instance = ['overcast', 'hot', 'humid', 'false']
 # test_instance = ['mild', 'severe', 'normal', 'no']
 # ans = log_pred_sup_single(test_instance, a)
-ans = evaluate_supervised('mushroom.csv')
 
 # Unsupervised NB testing
 # a = DataSet('flu-test.csv')
@@ -34,6 +33,19 @@ ans = evaluate_supervised('mushroom.csv')
 # e = b.prior_prob
 # f = b.posterior_prob
 # ans = predict_unsupervised(['severe', 'mild', 'high', 'yes'], b)
-ans = evaluate_unsupervised('mushroom.csv')
+# ans = evaluate_unsupervised('mushroom.csv')
 
+# Takes a filename input from commandline and prints out the confusion matrices
+# for both the supervised and unsupervised NB implementations as well as
+# printing out the accuracy rating
+
+filename = input("Input a filename: ")
+n = int(input("Number of iterations to do for Unsupervised NB: "))
+print("Supervised NB results . . . ")
+print()
+evaluate_supervised(filename)
+print()
+print("Unsupervised NB results . . . ")
+print()
+evaluate_unsupervised(filename, n)
 
