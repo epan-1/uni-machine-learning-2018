@@ -3,7 +3,8 @@
 # of the Naive Bayes classifier
 
 # Get the DataSet class from the other Python file
-from NB_classifier import DataSet, print_confusion, arg_max
+from dataset import DataSet
+from shared_funcs import *
 
 
 class UnsupervisedModel:
@@ -201,20 +202,3 @@ def evaluate_unsupervised(filename, n=3):
         accuracy += max(matrix[key].values())
     print('Accuracy = ' + str((accuracy/total_instances) * 100))
     return matrix
-
-
-from test_cases import *
-
-# a = DataSet('flu-test.csv')
-# evaluate_unsupervised('flu-test.csv')
-# temp_test(a.table)
-# a.random_initial()
-# b = UnsupervisedModel(a)
-# b.iterate(a, 2)
-# b = UnsupervisedModel(a)
-# c = b.prior_counts
-# d = b.posterior_counts
-# e = b.prior_prob
-# f = b.posterior_prob
-# ans = predict_unsupervised(['severe', 'mild', 'high', 'yes'], b)
-ans = evaluate_unsupervised('flu-test.csv')
