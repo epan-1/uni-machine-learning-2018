@@ -9,11 +9,29 @@
 import pandas as pd
 import numpy as np
 from function import *
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_selection import SelectKBest, chi2, mutual_info_classif
+from sklearn.naive_bayes import MultinomialNB
 
 # Read in the data
 file_path = 'COMP30027_2018S1_proj2-data/'
-file_name = 'train_raw.csv'
-data = pd.read_csv(file_path + file_name, header=None, encoding='ISO-8859-1')
+file_name = 'train_processed.csv'
+data = pd.read_csv(file_path + file_name, header=None, skiprows=1,
+                   skipinitialspace=True, encoding='ISO-8859-1')
 
-# Apply pre_process function to the text column
-data[6] = data[6].apply(pre_process)
+# Fill in nan values with a single whitespace
+data = data.fillna(value=' ')
+
+# Get X and y out of the data
+X_train = data[0].tolist()
+y_train = np.array(data[1].tolist())
+
+# Create and fit a CountVectoriser
+vectoriser = CountVectorizer()
+X_train_cv = vectoriser.fit_transform(X_train)
+
+# Using Naive Bayes
+nb = MultinomialNB(alpha=1.0)
+nb.fit(X_train_cv, y_train)
+print("NB Accuracy = " + str(nb.score(X_train_cv, y_train)))
