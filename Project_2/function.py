@@ -4,6 +4,8 @@
 ###
 
 import re
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import confusion_matrix, precision_score, recall_score
 
 
 def pre_process(data):
@@ -35,13 +37,34 @@ def convert_age(raw):
                 - 34-36
                 - 44-46
     """
-    if 14 <= int(raw) <= 16:
-        return '14-16'
-    elif 24 <= int(raw) <= 26:
-        return '24-26'
-    elif 34 <= int(raw) <= 36:
-        return '34-36'
-    elif 44 <= int(raw) <= 46:
-        return '44-46'
-    else:
+    if raw == '?':
+        # If it's already a question mark skip it
         return '?'
+    else:
+        if 14 <= int(raw) <= 16:
+            return '14-16'
+        elif 24 <= int(raw) <= 26:
+            return '24-26'
+        elif 34 <= int(raw) <= 36:
+            return '34-36'
+        elif 44 <= int(raw) <= 46:
+            return '44-46'
+        else:
+            return '?'
+
+
+def ave_cross_val_score(classifier, x, y, n):
+    """
+    This function returns the average score from an N-Fold Cross Validation
+    strategy
+    :param classifier:
+    :param x:
+    :param y:
+    :param n:
+    :return:
+    """
+    sum = 0
+    scores = cross_val_score(classifier, x, y, cv=n)
+    for i in range(n):
+        sum += scores[i]
+    return sum/n

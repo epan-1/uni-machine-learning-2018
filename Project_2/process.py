@@ -8,8 +8,8 @@ from function import *
 
 # Read in the data taking only the age column and text column
 file_path = 'COMP30027_2018S1_proj2-data/'
-file_name = 'train_raw.csv'
-output_name = 'train_processed.csv'
+file_name = 'test_raw.csv'
+output_name = 'test_processed.csv'
 data = pd.read_csv(file_path + file_name, header=None, usecols=(2, 6),
                    encoding='ISO-8859-1')
 
