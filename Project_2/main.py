@@ -15,6 +15,7 @@ from sklearn.feature_selection import SelectKBest, chi2, mutual_info_classif
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 
 # Read in the data
 file_path = 'COMP30027_2018S1_proj2-data/'
@@ -50,9 +51,9 @@ X_train_cv = vectoriser.fit_transform(X_train)
 X_dev_cv = vectoriser.transform(X_dev)
 
 # Using Naive Bayes
-# nb = MultinomialNB(alpha=1.0)
-# nb.fit(X_train_cv, y_train)
-# print("NB Accuracy = " + str(nb.score(X_dev_cv, y_dev)))
+nb = MultinomialNB(alpha=1.0)
+nb.fit(X_train_cv, y_train)
+print("NB Accuracy = " + str(nb.score(X_dev_cv, y_dev)))
 
 # Using Decision trees
 # dt = DecisionTreeClassifier(max_depth=None)
@@ -60,7 +61,7 @@ X_dev_cv = vectoriser.transform(X_dev)
 # print("DT Accuracy = " + str(dt.score(X_dev_cv, y_dev)))
 
 # Using SVMs
-C = 0.001
-clf = LinearSVC(C=C)
-clf.fit(X_train_cv, y_train)
-print(clf.score(X_dev_cv, y_dev))
+# C = 0.001
+# clf = LinearSVC(C=C)
+# clf.fit(X_train_cv, y_train)
+# print(clf.score(X_dev_cv, y_dev))
