@@ -19,7 +19,7 @@ data[6] = data[6].apply(pre_process)
 data[2] = data[2].apply(convert_age)
 
 # Write out the dataframe to a csv file
-data.to_csv(file_path + output_name, columns=(6, 2), index=False)
+data.to_csv(file_path + output_name, columns=(6,2), index=False)
 
 # The file that was written out will have the blog post in column 1 and age
 # in column 2.
