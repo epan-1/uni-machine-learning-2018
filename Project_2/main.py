@@ -9,6 +9,7 @@
 import pandas as pd
 import numpy as np
 from function import *
+from stacking_ensemble import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest, chi2, mutual_info_classif
@@ -51,9 +52,9 @@ X_train_cv = vectoriser.fit_transform(X_train)
 X_dev_cv = vectoriser.transform(X_dev)
 
 # Using Naive Bayes
-nb = MultinomialNB(alpha=1.0)
-nb.fit(X_train_cv, y_train)
-print("NB Accuracy = " + str(nb.score(X_dev_cv, y_dev)))
+# nb = MultinomialNB(alpha=1.0)
+# nb.fit(X_train_cv, y_train)
+# print("NB Accuracy = " + str(nb.score(X_dev_cv, y_dev)))
 
 # Using Decision trees
 # dt = DecisionTreeClassifier(max_depth=None)

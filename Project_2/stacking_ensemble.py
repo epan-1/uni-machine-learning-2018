@@ -15,6 +15,18 @@ from sklearn.model_selection import cross_val_predict
 from sklearn import datasets
 
 
+"""
+IMPORTANT THIS ENSEMBLE STACKER DOES NOT WORK CORRECTLY IN ITS CURRENT FORM
+IN ORDER TO MAKE IT WORK ONE NEEDS TO:
+    - CHANGE IT INTO A CLASS WITH
+        INIT METHOD THAT CREATES THE META DATASET OF PREDICTIONS WHEN A TRAIN/FIT
+        METHOD IS CALLED ON IT. LIKE THOSE IN SKLEARN CLASSIFIERS
+        ADD A PREDICT METHOD THAT TAKES IN THE ATTRIBUTES OF THE SAME FORM AS THOSE
+        THAT WERE USED TO TRAIN THE ENSEMBLE STACKING MODEL. THIS PREDICT FUNCTION
+        WILL BE THE ONE THAT RETURNS THE PREDICTED CLASS LABELS FOR THE GIVEN
+        INPUT DATA
+"""
+
 def create_meta_dataset(clfs, X, y, n_folds):
 
     # Output dataset
@@ -54,19 +66,15 @@ def create_meta_dataset(clfs, X, y, n_folds):
 
     return data
 
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
+# iris = datasets.load_iris()
+# X = iris.data
+# y = iris.target
+#
+# final_clf = LogisticRegression()
+# clfs = [MultinomialNB(), LinearSVC(), DecisionTreeClassifier()]
+#
+# data = create_meta_dataset(clfs, X, y, 10)
+#
+# final_train = data.iloc[:, 0:-1].as_matrix()
+# final_y = data.iloc[:, -1].as_matrix()
 
-final_clf = LogisticRegression()
-clfs = [MultinomialNB(), LinearSVC(), DecisionTreeClassifier()]
-
-data = create_meta_dataset(clfs, X, y, 10)
-
-final_train = data.iloc[:, 0:-1].as_matrix()
-final_y = data.iloc[:, -1].as_matrix()
-
-print(np.average(cross_val_score(final_clf, final_train, final_y, cv=10)))
-
-lr = DecisionTreeClassifier()
-print(np.average(cross_val_score(lr, X, y, cv=10)))
