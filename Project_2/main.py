@@ -40,23 +40,23 @@ test = test.fillna(value=' ')
 # Get X and y out of the data
 X_train = train[0].tolist()
 X_dev = dev[0].tolist()
-X_top10_train = top10_train.iloc[:, 1:-1]
-X_top10_dev = top10_dev.iloc[:, 1:-1]
 X_test = test[0].tolist()
 
 
 y_train = np.array(train[1].tolist())
 y_dev = np.array(dev[1].tolist())
-y_top10_train = top10_train[31]
-y_top10_dev = top10_dev[31]
+
+print("Extracting features... (Please wait)")
 
 # Create and fit a CountVectoriser
-# vectoriser = CountVectorizer()
+# vectoriser = CountVectorizer(ngram_range=(1, 3))
 # X_train_cv = vectoriser.fit_transform(X_train)
 # X_dev_cv = vectoriser.transform(X_dev)
+# X_test_cv = vectoriser.transform(X_test)
+
 
 # Create and fit a TFIDF Vectoriser
-vectoriser = CountVectorizer(ngram_range=(1, 2))
+vectoriser = CountVectorizer(ngram_range=(1, 3))
 X_train_cv = vectoriser.fit_transform(X_train)
 X_dev_cv = vectoriser.transform(X_dev)
 X_test_cv = vectoriser.transform(X_test)
@@ -67,25 +67,29 @@ X_test_cv = vectoriser.transform(X_test)
 # X_train_x2 = x2.transform(X_train_cv)
 # X_dev_x2 = x2.transform(X_dev_cv)
 
-# Using Naive Bayes
-nb = MultinomialNB(alpha=1.0)
-# nb.fit(X_train_cv, y_train)
-# print("NB Accuracy = " + str(nb.score(X_dev_cv, y_dev)))
+print("Commence classifier training...")
 
-# Using SVMs (This has the best parameters)
+# Using Naive Bayes
+nb = MultinomialNB(alpha=0.5)
+# nb.fit(X_train_cv, y_train)
+# produce_metrics(nb, X_dev_cv, y_dev, 'Multinomial Naive Bayes')
+
+# Using SVMs (This has the best parameters for voting classifier)
 C = 0.1
 lsv = LinearSVC(C=C)
-# lsv.fit(X_train_cv, y_train)
-# print(lsv.score(X_dev_cv, y_dev))
 
 # Using Logistic regression (This is the optimal performance)
-lr = LogisticRegression(C=1, solver='saga', max_iter=1000, n_jobs=-1)
-lr.fit(X_train_cv, y_train)
-print("LR Accuracy = " + str(lr.score(X_dev_cv, y_dev)))
+lr = LogisticRegression(C=1, solver='sag', max_iter=100)
+# lr.fit(X_train_cv, y_train)
+# produce_metrics(lr, X_dev_cv, y_dev, 'Logistic Regression')
 
-# voter = VotingClassifier(estimators=[('nb', nb), ('lsv', lsv), ('lr', lr)], voting='hard', n_jobs=-1)
-# voter.fit(X_train_cv, y_train)
-# print("Voter accuracy = " + str(voter.score(X_dev_cv, y_dev)))
+
+voter = VotingClassifier(estimators=[('lr', lr), ('lsv', lsv), ('nb', nb)], voting='hard')
+voter.fit(X_train_cv, y_train)
+produce_metrics(voter, X_dev_cv, y_dev, 'Voter')
+
+
+print("Producing predictions...")
 
 # Producing the predictions
 with open(file_path + 'predictions.csv', 'w+') as out:
